@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/",
+    "lib": ["es2019", "dom"],
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "stripInternal": true,
+    "target": "ES5",
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "noEmitHelpers": true,
+    "importHelpers": true
+  },
+  "exclude": [".vscode", "node_modules", "yarn.lock"]
+}

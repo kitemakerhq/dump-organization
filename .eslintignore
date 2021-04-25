@@ -1,0 +1,10 @@
+.cache
+.content
+.git
+data
+dist
+node_modules
+out
+src/slate/slate.d.ts
+vendor
+utils

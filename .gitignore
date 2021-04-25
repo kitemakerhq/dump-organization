@@ -1,0 +1,7 @@
+.DS_Store
+.env
+.keys
+.tscache
+.vscode/*-snippets
+.vscode/settings.json
+node_modules
