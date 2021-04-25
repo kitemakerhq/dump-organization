@@ -12,6 +12,8 @@ export const organizationQuery = gql`
         id
         username
         name
+        guest
+        deactivated
         createdAt
         updatedAt
       }
@@ -43,6 +45,10 @@ export const organizationQuery = gql`
         id
         key
         name
+        private
+        members {
+          id
+        }
         createdAt
         updatedAt
 
