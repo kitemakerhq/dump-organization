@@ -14,11 +14,6 @@ if (!process.env.KITEMAKER_TOKEN) {
   process.exit(-1);
 }
 
-if (process.argv.length !== 3) {
-  console.error('Usage: yarn run <organization-id>');
-  process.exit(-1);
-}
-
 const host = process.env.KITEMAKER_HOST ?? 'https://toil.kitemaker.co';
 
 const httpLink = new HttpLink({
