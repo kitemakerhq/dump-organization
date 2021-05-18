@@ -14,11 +14,11 @@ yarn
 export KITEMAKER_TOKEN=<your-kitemaker-api-token>
 
 # dump the whole org
-yarn dump
+yarn --silent dump
 
 # specify the output format
-yarn dump --output=json
+yarn --silent dump --output=json
 
 # limit it to a few spaces
-yarn dump --output=csv --space=ABC --space=ACM
+yarn --silent dump --output=csv --space=ABC --space=ACM
 ```
