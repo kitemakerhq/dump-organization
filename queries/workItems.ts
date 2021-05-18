@@ -28,6 +28,12 @@ export const workItemsQuery = gql`
         watchers {
           id
         }
+        members {
+          id
+        }
+        labels {
+          id
+        }
         updatedAt
         createdAt
       }

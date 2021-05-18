@@ -4,8 +4,21 @@ This is a simple script that utilizes the Kitemaker GraphQL API to dump all of t
 
 ## Usage
 
+Options:
+
+- `--output`: Specify the output format. Must be either `json` or `csv`
+- `--space`: Limit the output to the specified space, as idenitified by its key. Can be specified multiple times
+
 ```bash
 yarn
 export KITEMAKER_TOKEN=<your-kitemaker-api-token>
+
+# dump the whole org
 yarn dump
+
+# specify the output format
+yarn dump --output=json
+
+# limit it to a few spaces
+yarn dump --output=csv --space=ABC --space=ACM
 ```

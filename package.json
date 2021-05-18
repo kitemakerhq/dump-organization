@@ -10,6 +10,7 @@
     "dump": "ts-node-dev --quiet index.ts"
   },
   "devDependencies": {
+    "@types/command-line-args": "^5.0.0",
     "@types/node": "^14.14.41",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
@@ -18,12 +19,17 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
+    "@fast-csv/format": "^4.3.5",
+    "@types/lodash": "^4.14.169",
     "apollo-cache-inmemory": "^1.6.6",
     "apollo-client": "^2.6.10",
     "apollo-link-context": "^1.0.20",
     "apollo-link-http": "^1.5.17",
+    "command-line-args": "^5.1.1",
     "cross-fetch": "^3.1.4",
     "graphql": "^15.5.0",
-    "graphql-tag": "^2.11.0"
+    "graphql-tag": "^2.11.0",
+    "lodash": "^4.17.21",
+    "tslib": "^2.2.0"
   }
 }

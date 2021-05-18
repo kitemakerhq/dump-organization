@@ -2,10 +2,13 @@ import { InMemoryCache, IntrospectionFragmentMatcher } from 'apollo-cache-inmemo
 import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { HttpLink } from 'apollo-link-http';
+import commandLineArgs from 'command-line-args';
 import 'cross-fetch/polyfill';
+import { keyBy } from 'lodash';
 import { organizationQuery } from './queries/organization';
 import { themesQuery } from './queries/themes';
 import { workItemsQuery } from './queries/workItems';
+import { writeToString } from '@fast-csv/format';
 
 if (!process.env.KITEMAKER_TOKEN) {
   console.error(
@@ -15,6 +18,18 @@ if (!process.env.KITEMAKER_TOKEN) {
 }
 
 const host = process.env.KITEMAKER_HOST ?? 'https://toil.kitemaker.co';
+
+const opts = commandLineArgs([
+  { name: 'output', alias: 'o', defaultValue: 'json', type: String },
+  { name: 'space', alias: 's', type: String, multiple: true },
+]);
+
+if (!['json', 'csv'].includes(opts.output.toLowerCase())) {
+  console.error('Invalid output format');
+  process.exit(-1);
+}
+
+const filteredSpaces: string[] = (opts.space ?? []).map((s: string) => s.toLowerCase());
 
 const httpLink = new HttpLink({
   uri: `${host}/developers/graphql`,
@@ -104,6 +119,46 @@ async function fetchSpace(spaceId: string) {
   };
 }
 
+async function toCSV(organization: any): Promise<string> {
+  const membersById = keyBy(organization.users, 'id');
+
+  const rows = organization.spaces.flatMap((space: any) => {
+    const labelsById = keyBy(space.labels, 'id');
+    const statusesById = keyBy(space.statuses, 'id');
+
+    return [
+      ...space.workItems.map((workItem: any) => ({
+        id: workItem.id,
+        type: 'workItem',
+        space: space.key,
+        number: workItem.number,
+        status: statusesById[workItem.status.id].name,
+        title: workItem.title,
+        description: workItem.description,
+        members: (workItem.members ?? []).map((member: any) => membersById[member.id].username),
+        labels: (workItem.labels ?? []).map((label: any) => labelsById[label.id].name),
+        createdAt: workItem.createdAt,
+        updatedAt: workItem.updatedAt,
+      })),
+      ...space.themes.map((theme: any) => ({
+        id: theme.id,
+        type: 'theme',
+        space: space.key,
+        number: theme.number,
+        status: theme.horizon,
+        title: theme.title,
+        description: theme.description,
+        members: [],
+        labels: [],
+        createdAt: theme.createdAt,
+        updatedAt: theme.updatedAt,
+      })),
+    ];
+  });
+
+  return writeToString(rows, { headers: true });
+}
+
 async function dump() {
   try {
     const result = await client.query({ query: organizationQuery });
@@ -112,7 +167,13 @@ async function dump() {
       process.exit(-1);
     }
 
-    const org = result.data.organization;
+    const org = {
+      ...result.data.organization,
+      spaces: result.data.organization.spaces.filter(
+        (s: any) => !filteredSpaces.length || filteredSpaces.includes(s.key.toLowerCase())
+      ),
+    };
+
     const spaceData: any[] = await Promise.all(org.spaces.map((s: any) => fetchSpace(s.id)));
 
     for (const spaceWorkItemsAndThemes of spaceData) {
@@ -121,7 +182,11 @@ async function dump() {
       space.themes = spaceWorkItemsAndThemes.themes;
     }
 
-    console.log(JSON.stringify(org, null, '  '));
+    if (opts.output === 'json') {
+      console.log(JSON.stringify(org, null, '  '));
+    } else {
+      console.log(await toCSV(org));
+    }
   } catch (e) {
     console.error('Error dumping organization', e.message, JSON.stringify(e, null, '  '));
   }
