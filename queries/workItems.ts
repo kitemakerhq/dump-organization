@@ -34,6 +34,8 @@ export const workItemsQuery = gql`
         labels {
           id
         }
+        impact
+        effort
         updatedAt
         createdAt
       }

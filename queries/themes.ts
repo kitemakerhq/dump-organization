@@ -29,6 +29,14 @@ export const themesQuery = gql`
         watchers {
           id
         }
+        members {
+          id
+        }
+        labels {
+          id
+        }
+        impact
+        effort
         updatedAt
         createdAt
       }
