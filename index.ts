@@ -22,6 +22,7 @@ const host = process.env.KITEMAKER_HOST ?? 'https://toil.kitemaker.co';
 const opts = commandLineArgs([
   { name: 'output', alias: 'o', defaultValue: 'json', type: String },
   { name: 'space', alias: 's', type: String, multiple: true },
+  { name: 'no-description', alias: 'n', type: Boolean, defaultValue: false },
 ]);
 
 if (!['json', 'csv'].includes(opts.output.toLowerCase())) {
@@ -30,6 +31,7 @@ if (!['json', 'csv'].includes(opts.output.toLowerCase())) {
 }
 
 const filteredSpaces: string[] = (opts.space ?? []).map((s: string) => s.toLowerCase());
+const noDescription: boolean = opts['no-description'];
 
 const httpLink = new HttpLink({
   uri: `${host}/developers/graphql`,
@@ -134,7 +136,7 @@ async function toCSV(organization: any): Promise<string> {
         number: workItem.number,
         status: statusesById[workItem.status.id].name,
         title: workItem.title,
-        description: workItem.description,
+        description: noDescription ? undefined : workItem.description,
         members: (workItem.members ?? []).map((member: any) => membersById[member.id].username),
         labels: (workItem.labels ?? []).map((label: any) => labelsById[label.id].name),
         impact: workItem.impact,
@@ -149,7 +151,7 @@ async function toCSV(organization: any): Promise<string> {
         number: theme.number,
         status: theme.horizon,
         title: theme.title,
-        description: theme.description,
+        description: noDescription ? undefined : theme.description,
         members: (theme.members ?? []).map((member: any) => membersById[member.id].username),
         labels: (theme.labels ?? []).map((label: any) => labelsById[label.id].name),
         impact: theme.impact,

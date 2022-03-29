@@ -8,6 +8,7 @@ Options:
 
 - `--output`: Specify the output format. Must be either `json` or `csv`
 - `--space`: Limit the output to the specified space, as idenitified by its key. Can be specified multiple times
+- `--no-description`: Don't include the work item or theme descriptions in the output
 
 ```bash
 yarn
@@ -21,4 +22,7 @@ yarn --silent dump --output=json
 
 # limit it to a few spaces
 yarn --silent dump --output=csv --space=ABC --space=ACM
+
+# don't output descriptions
+yarn --silent dump --no-description
 ```
