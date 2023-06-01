@@ -46,8 +46,24 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const fragmentMatcher = new IntrospectionFragmentMatcher({
-  introspectionQueryResultData: { __schema: { types: [] } },
+  introspectionQueryResultData: {
+    __schema: {
+      types: [
+        {
+          kind: 'UNION',
+          name: 'Actor',
+          possibleTypes: [
+            { name: 'User' },
+            { name: 'Application' },
+            { name: 'Integration' },
+            { name: 'IntegrationUser' },
+          ],
+        },
+      ],
+    },
+  },
 });
+
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache({ fragmentMatcher }),
