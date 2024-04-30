@@ -6,9 +6,10 @@ import commandLineArgs from 'command-line-args';
 import 'cross-fetch/polyfill';
 import { keyBy } from 'lodash';
 import { organizationQuery } from './queries/organization';
-import { themesQuery } from './queries/themes';
 import { workItemsQuery } from './queries/workItems';
 import { writeToString } from '@fast-csv/format';
+import { roadmapsQuery } from './queries/roadmaps';
+import { initiativesQuery } from './queries/initiatives';
 
 if (!process.env.KITEMAKER_TOKEN) {
   console.error(
@@ -98,45 +99,54 @@ async function fetchWorkItems(space: string): Promise<any[]> {
   return workItems;
 }
 
-async function fetchThemes(space: string): Promise<any[]> {
-  const themes: any[] = [];
+async function fetchInitiatives(): Promise<any[]> {
+  const initiatives: any[] = [];
   let hasMore = true;
   let cursor: string | null = null;
 
   while (hasMore) {
     const result: any = await client.query({
-      query: themesQuery,
+      query: initiativesQuery,
       variables: {
-        space,
         cursor,
       },
     });
 
     if (result.errors) {
-      console.error('Unable to dump work themes', JSON.stringify(result.errors, null, '  '));
+      console.error('Unable to dump work initiatives', JSON.stringify(result.errors, null, '  '));
       process.exit(-1);
     }
 
-    cursor = result.data.themes.cursor;
-    hasMore = result.data.themes.hasMore;
-    for (const theme of result.data.themes.themes) {
-      themes.push(theme);
+    cursor = result.data.initiatives.cursor;
+    hasMore = result.data.initiatives.hasMore;
+    for (const initiative of result.data.initiatives.initiatives) {
+      initiatives.push(initiative);
     }
   }
-  return themes;
+  return initiatives;
 }
 
 async function fetchSpace(spaceId: string) {
   const workItems = await fetchWorkItems(spaceId);
-  const themes = await fetchThemes(spaceId);
 
   return {
     id: spaceId,
     workItems,
-    themes,
   };
 }
 
+async function fetchRoadmaps() {
+  const result: any = await client.query({
+    query: roadmapsQuery,
+  });
+
+  if (result.errors) {
+    console.error('Unable to dump roadmaps', JSON.stringify(result.errors, null, '  '));
+    process.exit(-1);
+  }
+
+  return result.data.roadmaps.roadmaps;
+}
 async function toCSV(organization: any): Promise<string> {
   const membersById = keyBy(organization.users, 'id');
 
@@ -160,21 +170,6 @@ async function toCSV(organization: any): Promise<string> {
         createdAt: workItem.createdAt,
         updatedAt: workItem.updatedAt,
       })),
-      ...space.themes.map((theme: any) => ({
-        id: theme.id,
-        type: 'theme',
-        space: space.key,
-        number: theme.number,
-        status: theme.horizon,
-        title: theme.title,
-        description: noDescription ? undefined : theme.description,
-        members: (theme.members ?? []).map((member: any) => membersById[member.id].username),
-        labels: (theme.labels ?? []).map((label: any) => labelsById[label.id].name),
-        impact: theme.impact,
-        effort: theme.effort,
-        createdAt: theme.createdAt,
-        updatedAt: theme.updatedAt,
-      })),
     ];
   });
 
@@ -189,8 +184,13 @@ async function dump() {
       process.exit(-1);
     }
 
+    const roadmaps = await fetchRoadmaps();
+    const initiatives = await fetchInitiatives();
+
     const org = {
       ...result.data.organization,
+      roadmaps,
+      initiatives,
       spaces: result.data.organization.spaces.filter(
         (s: any) => !filteredSpaces.length || filteredSpaces.includes(s.key.toLowerCase())
       ),
@@ -198,10 +198,9 @@ async function dump() {
 
     const spaceData: any[] = await Promise.all(org.spaces.map((s: any) => fetchSpace(s.id)));
 
-    for (const spaceWorkItemsAndThemes of spaceData) {
-      const space = org.spaces.find((s: any) => s.id === spaceWorkItemsAndThemes.id);
-      space.workItems = spaceWorkItemsAndThemes.workItems;
-      space.themes = spaceWorkItemsAndThemes.themes;
+    for (const spaceWorkItems of spaceData) {
+      const space = org.spaces.find((s: any) => s.id === spaceWorkItems.id);
+      space.workItems = spaceWorkItems.workItems;
     }
 
     if (opts.output === 'json') {
@@ -209,7 +208,7 @@ async function dump() {
     } else {
       console.log(await toCSV(org));
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error dumping organization', e.message, JSON.stringify(e, null, '  '));
   }
 }
