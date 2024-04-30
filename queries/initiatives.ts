@@ -1,15 +1,14 @@
 import gql from 'graphql-tag';
 import { actorFragment } from './fragments';
 
-export const themesQuery = gql`
-  query Themes($space: ID!, $cursor: String) {
-    themes(spaceId: $space, cursor: $cursor, count: 50) {
-      themes {
+export const initiativesQuery = gql`
+  query Initiatives($cursor: String) {
+    initiatives(cursor: $cursor, count: 50) {
+      initiatives {
         id
         number
         title
         description
-        horizon
         comments {
           id
           body
@@ -20,9 +19,6 @@ export const themesQuery = gql`
           updatedAt
           createdAt
         }
-        workItems {
-          id
-        }
         actor {
           ...ActorFragment
         }
@@ -32,11 +28,11 @@ export const themesQuery = gql`
         members {
           id
         }
-        labels {
-          id
-        }
         impact
         effort
+        roadmapColumns {
+          id
+        }
         updatedAt
         createdAt
       }
